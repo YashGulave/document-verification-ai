@@ -1,0 +1,11 @@
+.env
+instance/
+storage/
+__pycache__/
+.pytest_cache/
+.pytest_tmp/
+pytest-cache-files-*/
+*.pyc
+models/*.joblib
+*.joblib
+data/

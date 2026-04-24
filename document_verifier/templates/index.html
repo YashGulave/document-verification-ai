@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intelligent Document Verification</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <div>
+        <h1>Document Verification</h1>
+        <p>OCR, computer vision tamper checks, stored evidence, and grounded explanations.</p>
+      </div>
+      <a class="button secondary" href="/health">Health</a>
+    </section>
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <section class="grid">
+      <form class="panel" method="post" action="/upload" enctype="multipart/form-data">
+        <h2>Upload</h2>
+        <input type="file" name="document" accept="image/*,.pdf" required>
+        <button class="button" type="submit">Verify File</button>
+      </form>
+
+      <section class="panel">
+        <h2>Camera</h2>
+        <div class="camera-frame">
+          <video id="camera" autoplay playsinline muted></video>
+          <canvas id="cameraGuide"></canvas>
+          <canvas id="snapshot" hidden></canvas>
+        </div>
+        <div class="actions">
+          <button class="button secondary" id="startCamera" type="button">Start Camera</button>
+          <button class="button" id="capturePhoto" type="button" disabled>Capture & Verify</button>
+        </div>
+        <p id="cameraStatus" class="status"></p>
+      </section>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

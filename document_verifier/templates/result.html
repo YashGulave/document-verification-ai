@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verification Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <div>
+        <h1>Verification Result</h1>
+        <p>{{ document.original_filename }} - document #{{ document.id }}</p>
+      </div>
+      <div class="actions">
+        <a class="button secondary" href="/">New Check</a>
+        <a class="button" href="{{ payload.report_url }}">Report</a>
+      </div>
+    </section>
+
+    <section class="result-layout">
+      <section class="image-panel">
+        <div class="image-wrap">
+          <img id="documentImage" src="{{ payload.image_url }}" alt="Document image">
+          <canvas id="overlay"></canvas>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel compact">
+          <h2>Suspicious Areas</h2>
+          {% if payload.issues %}
+            {% for issue in payload.issues %}
+              <div class="issue">
+                <div class="issue-title">{{ issue.display_name }}</div>
+                <div class="meter"><span style="width: {{ (issue.confidence * 100)|round|int }}%"></span></div>
+                <div class="muted">Confidence {{ "%.2f"|format(issue.confidence) }} - x{{ issue.box.x }}, y{{ issue.box.y }}</div>
+                <p class="issue-detail">{{ issue.review_meaning }}</p>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="muted">No suspicious regions detected.</p>
+          {% endif %}
+        </section>
+
+        <section class="panel compact">
+          <h2>AI Assessment</h2>
+          <p>{{ payload.explanation.summary }}</p>
+          {% set structured = payload.explanation.structured %}
+          {% if structured.reasoning_source %}
+            <p class="muted">Reasoning source: {{ structured.reasoning_source.replace('_', ' ') }}</p>
+          {% endif %}
+          {% if structured.document_specific_findings %}
+            <h3>Why It Looks Suspicious</h3>
+            <ul class="clean-list">
+              {% for item in structured.document_specific_findings %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if structured.review_guidance %}
+            <h3>What To Verify</h3>
+            <ul class="clean-list">
+              {% for item in structured.review_guidance %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if structured.basis %}
+            <h3>Technical Evidence</h3>
+            {% for item in structured.basis[:6] %}
+              <div class="basis-item">
+                <strong>{{ item.issue_type.replace('_', ' ') }}</strong>
+                <p>{{ item.why_it_feels_suspicious or item.reviewer_reason or item.reason or item.measurement }}</p>
+                {% if item.measurement %}
+                  <p class="muted">{{ item.measurement }}</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% if structured.dataset_context %}
+            <h3>Dataset Context</h3>
+            <p>{{ structured.dataset_context.note }}</p>
+            <p class="muted">References: {{ structured.dataset_context.reference_dataset_names|join(', ') }}</p>
+          {% endif %}
+        </section>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <h2>Extracted Text</h2>
+      <pre>{{ payload.ocr.text }}</pre>
+    </section>
+  </main>
+  <script>
+    window.verificationIssues = {{ payload.issues|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
